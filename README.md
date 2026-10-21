@@ -15,22 +15,6 @@ A small C program that renders the Mandelbrot set using **multiple Windows proce
 
 ## How it works
 
-```
-                       ┌──────────────────────────────┐
-                       │  parent: fractal_renderer N  │
-                       │  1. create shared buffer     │
-                       │  2. spawn N workers          │
-                       │  3. wait for all, time it    │
-                       │  4. write PNG                │
-                       └──────────────┬───────────────┘
-              CreateProcessA          │          "Local\fractal_shm"
-        ┌─────────────────┬───────────┴──────┬─────────────────┐
-        ▼                 ▼                  ▼                 ▼
- --process 0 N     --process 1 N      --process 2 N   …  --process N-1 N
- rows 0, N, 2N…    rows 1, N+1, …     rows 2, N+2, …     rows N-1, 2N-1, …
-        └─────────────────┴──── write into the same RGB buffer ┘
-```
-
 1. The **parent** creates a named shared-memory region big enough for `1024 × 1024 × 3` bytes of RGB data.
 2. It starts `N` **child processes** running the same executable with `--process <id> <total>`.
 3. Each child opens the shared region and, for each of its rows, iterates `z = z² + c` up to `MAX_ITER = 1000` times for every pixel. It stops early once `|z|² ≥ 4`.
